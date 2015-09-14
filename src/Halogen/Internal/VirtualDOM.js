@@ -102,6 +102,7 @@ exports.vtext = function () {
 exports.vnode = function () {
   var VirtualNode = require("virtual-dom/vnode/vnode");
   var SoftSetHook = require("virtual-dom/virtual-hyperscript/hooks/soft-set-hook");
+  var prefixes = ["aria-", "data-", "readonly"];
   return function (name) {
     return function (attr) {
       return function (children) {
@@ -109,7 +110,11 @@ exports.vnode = function () {
           attributes: {}
         };
         for (var key in attr) {
-          if (key.indexOf("data-") === 0 || key === "readonly") {
+          var isAttr = false, i;
+          for (i = 0; i < prefixes.length; i++) {
+            isAttr = isAttr || key.indexOf(prefixes[i]) === 0;
+          }
+          if (isAttr) {
             props.attributes[key] = attr[key];
           } else {
             props[key] = attr[key];
