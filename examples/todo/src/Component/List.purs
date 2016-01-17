@@ -19,6 +19,7 @@ import Component.Task
 
 -- | The list component query algebra.
 data ListQuery a = NewTask a
+                 | AllDone a
 
 -- | The slot value that is filled by tasks during the install process.
 newtype TaskSlot = TaskSlot TaskId
@@ -43,6 +44,8 @@ list = parentComponent' render eval peek
                   ]
            , H.ul_ (map renderTask st.tasks)
            , H.p_ [ H.text $ show st.numCompleted ++ " / " ++ show (length st.tasks) ++ " complete" ]
+           , H.button [ E.onClick (E.input_ AllDone) ]
+                      [ H.text "All Done" ]
            ]
 
   renderTask :: TaskId -> ParentHTML Task ListQuery TaskQuery g TaskSlot
@@ -51,6 +54,9 @@ list = parentComponent' render eval peek
   eval :: Natural ListQuery (ParentDSL List Task ListQuery TaskQuery g TaskSlot)
   eval (NewTask next) = do
     modify addTask
+    pure next
+  eval (AllDone next) = do
+    toggled <- queries (action (ToggleCompleted true))
     pure next
 
   peek :: forall a. ChildF TaskSlot TaskQuery a -> ParentDSL List Task ListQuery TaskQuery g TaskSlot Unit
