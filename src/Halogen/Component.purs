@@ -23,7 +23,7 @@ module Halogen.Component
   , liftQuery
   , query
   , query'
-  , queries
+  , queryAll
   , transform
   , transformChild
   , interpret
@@ -192,12 +192,12 @@ query' i p q = liftQuery (mkQuery' i p q)
 
 -- | Queries every child component that is currently installed. For use within
 -- | a parent component's `eval` or `peek` function.
-queries
+queryAll
   :: forall s s' f f' g p i
    . (Functor g, Ord p)
   => f' i
   -> Free (HalogenFP ParentEventSource s f (QueryF s s' f f' g p)) (M.Map p i)
-queries q = liftQuery (mkQueries q)
+queryAll q = liftQuery (mkQueries q)
 
 -- | Creates a query for a child component where `p` is the slot the component
 -- | was installed into and `f' i` in the input query.

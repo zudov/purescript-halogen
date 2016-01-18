@@ -56,7 +56,7 @@ list = parentComponent' render eval peek
     modify addTask
     pure next
   eval (AllDone next) = do
-    toggled <- queries (action (ToggleCompleted true))
+    toggled <- queryAll (action (ToggleCompleted true))
     pure next
 
   peek :: forall a. ChildF TaskSlot TaskQuery a -> ParentDSL List Task ListQuery TaskQuery g TaskSlot Unit
