@@ -9,6 +9,7 @@ import Data.Array (snoc, filter, length)
 import Data.Functor.Coproduct (Coproduct())
 import Data.Generic (Generic, gEq, gCompare)
 import Data.Maybe (fromMaybe)
+import Data.Map (size) as M
 
 import Halogen
 import qualified Halogen.HTML.Indexed as H
@@ -57,6 +58,7 @@ list = parentComponent' render eval peek
     pure next
   eval (AllDone next) = do
     toggled <- queryAll (action (ToggleCompleted true))
+    modify $ updateNumCompleted (const (M.size toggled))
     pure next
 
   peek :: forall a. ChildF TaskSlot TaskQuery a -> ParentDSL List Task ListQuery TaskQuery g TaskSlot Unit
