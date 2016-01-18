@@ -190,6 +190,8 @@ query'
   -> Free (HalogenFP ParentEventSource s'' f'' (QueryF s'' s' f'' f' g p')) (Maybe i)
 query' i p q = liftQuery (mkQuery' i p q)
 
+-- | Queries every child component that is currently installed. For use within
+-- | a parent component's `eval` or `peek` function.
 queries
   :: forall s s' f f' g p i
    . (Functor g, Ord p)
@@ -213,6 +215,7 @@ mkQuery p q = do
   for (M.lookup p st.children) \(Tuple c _) ->
     mapF (transformHF (mapStateFChild p) (ChildF p) id) (queryComponent c q)
 
+-- | Creates a query for every child component that is currently installed.
 mkQueries
   :: forall s s' f f' p g i
    . (Functor g, Ord p)
