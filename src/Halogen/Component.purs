@@ -44,7 +44,6 @@ import Control.Monad.State.Trans as CMS
 
 import Data.Bifunctor (bimap, lmap, rmap)
 import Data.Functor.Coproduct (Coproduct(), coproduct, left, right)
-import Data.List (List())
 import Data.Map as M
 import Data.Maybe (Maybe(..), maybe)
 import Data.Maybe.Unsafe as U
@@ -195,7 +194,7 @@ queries
   :: forall s s' f f' g p i
    . (Functor g, Ord p)
   => f' i
-  -> Free (HalogenFP ParentEventSource s f (QueryF s s' f f' g p)) (List i)
+  -> Free (HalogenFP ParentEventSource s f (QueryF s s' f f' g p)) (M.Map p i)
 queries q = liftQuery (mkQueries q)
 
 -- | Creates a query for a child component where `p` is the slot the component
@@ -218,11 +217,11 @@ mkQueries
   :: forall s s' f f' p g i
    . (Functor g, Ord p)
   => f' i
-  -> QueryF s s' f f' g p (List i)
+  -> QueryF s s' f f' g p (M.Map p i)
 mkQueries q = do
   InstalledState st <- get
-  for (M.toList st.children) \(Tuple p (Tuple c _)) ->
-    mapF (transformHF (mapStateFChild p) (ChildF p) id) (queryComponent c q)
+  M.fromList <$> for (M.toList st.children) \(Tuple p (Tuple c _)) ->
+    Tuple p <$> mapF (transformHF (mapStateFChild p) (ChildF p) id) (queryComponent c q)
 
 -- | A version of [`mkQuery`](#mkQuery) for use when a parent component has
 -- | multiple types of child component.
