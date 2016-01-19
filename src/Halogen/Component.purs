@@ -31,6 +31,7 @@ module Halogen.Component
   , interpret
   , renderComponent
   , queryComponent
+  , getSlots
   ) where
 
 import Prelude
@@ -46,6 +47,7 @@ import Control.Monad.State.Trans as CMS
 
 import Data.Bifunctor (bimap, lmap, rmap)
 import Data.Functor.Coproduct (Coproduct(), coproduct, left, right)
+import Data.List (List())
 import Data.Map as M
 import Data.Maybe (Maybe(..), maybe)
 import Data.Maybe.Unsafe as U
@@ -246,6 +248,15 @@ mkQueries q = do
   InstalledState st <- get
   M.fromList <$> for (M.toList st.children) \(Tuple p (Tuple c _)) ->
     Tuple p <$> mapF (transformHF (mapStateFChild p) (ChildF p) id) (queryComponent c q)
+
+getSlots
+  :: forall s s' f f' p g i
+   . (Functor g, Ord p)
+   => QueryF s s' f f' g p (List p)
+getSlots = do
+  InstalledState st <- get
+  pure (M.keys st.children)
+
 
 -- | A version of [`mkQueries](#mkQueries) for use when a parent component has
 -- | multiple types of child component.
