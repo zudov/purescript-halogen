@@ -10,6 +10,7 @@ import Control.Plus (Plus)
 import Data.Either (Either(..))
 import Data.Functor.Coproduct (Coproduct())
 import Data.Maybe (Maybe(..))
+import Data.Map (lookup) as M
 
 import Halogen
 import Halogen.Component.ChildPath (ChildPath(), cpL, cpR, (:>))
@@ -59,9 +60,9 @@ ui = parentComponent render eval
 
   eval :: Natural Query (ParentDSL State ChildState Query ChildQuery g ChildSlot)
   eval (ReadStates next) = do
-    a <- query' cpA SlotA (request GetStateA)
-    b <- query' cpB SlotB (request GetStateB)
-    c <- query' cpC SlotC (request GetStateC)
+    a <- M.lookup (Left SlotA) <$> queryAll' cpA (request GetStateA)
+    b <- M.lookup (Right (Left SlotB)) <$> queryAll' cpB (request GetStateB)
+    c <- M.lookup (Right (Right SlotC)) <$> queryAll' cpC (request GetStateC)
     modify (const $ State { a: a, b: b, c: c })
     pure next
 
