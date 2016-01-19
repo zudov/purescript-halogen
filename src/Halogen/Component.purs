@@ -60,8 +60,6 @@ import Halogen.Query.EventSource (EventSource(..), ParentEventSource(), runEvent
 import Halogen.Query.HalogenF (HalogenF(), HalogenFP(..), hoistHalogenF, transformHF)
 import Halogen.Query.StateF (StateF(..), mapState)
 
-import Unsafe.Coerce (unsafeCoerce)
-
 -- | Data type for Halogen components.
 -- | - `s` - the component's state
 -- | - `f` - the component's query algebra
