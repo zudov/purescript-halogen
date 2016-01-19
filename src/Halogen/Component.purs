@@ -20,10 +20,12 @@ module Halogen.Component
   , mkQuery
   , mkQuery'
   , mkQueries
+  , mkQueries'
   , liftQuery
   , query
   , query'
   , queryAll
+  , queryAll'
   , transform
   , transformChild
   , interpret
@@ -197,6 +199,16 @@ queryAll
   -> Free (HalogenFP ParentEventSource s f (QueryF s s' f f' g p)) (M.Map p i)
 queryAll q = liftQuery (mkQueries q)
 
+-- | A version of [`queryAll](#queryAll) for use when a parent component has
+-- | multiple types of child component.
+queryAll'
+  :: forall s s' s'' f f' f'' g p p' i
+   . (Functor g, Ord p')
+  => ChildPath s s' f f' p p'
+  -> f i
+  -> Free (HalogenFP ParentEventSource s'' f'' (QueryF s'' s' f'' f' g p')) (M.Map p' i)
+queryAll' i q = liftQuery (mkQueries' i q)
+
 -- | Creates a query for a child component where `p` is the slot the component
 -- | was installed into and `f' i` in the input query.
 -- |
@@ -213,6 +225,17 @@ mkQuery p q = do
   for (M.lookup p st.children) \(Tuple c _) ->
     mapF (transformHF (mapStateFChild p) (ChildF p) id) (queryComponent c q)
 
+-- | A version of [`mkQuery`](#mkQuery) for use when a parent component has
+-- | multiple types of child component.
+mkQuery'
+  :: forall s s' s'' f f' f'' g p p' i
+   . (Functor g, Ord p')
+  => ChildPath s s' f f' p p'
+  -> p
+  -> f i
+  -> QueryF s'' s' f'' f' g p' (Maybe i)
+mkQuery' i p q = mkQuery (injSlot i p) (injQuery i q)
+
 -- | Creates a query for every child component that is currently installed.
 mkQueries
   :: forall s s' f f' p g i
@@ -224,16 +247,15 @@ mkQueries q = do
   M.fromList <$> for (M.toList st.children) \(Tuple p (Tuple c _)) ->
     Tuple p <$> mapF (transformHF (mapStateFChild p) (ChildF p) id) (queryComponent c q)
 
--- | A version of [`mkQuery`](#mkQuery) for use when a parent component has
+-- | A version of [`mkQueries](#mkQueries) for use when a parent component has
 -- | multiple types of child component.
-mkQuery'
+mkQueries'
   :: forall s s' s'' f f' f'' g p p' i
    . (Functor g, Ord p')
   => ChildPath s s' f f' p p'
-  -> p
   -> f i
-  -> QueryF s'' s' f'' f' g p' (Maybe i)
-mkQuery' i p q = mkQuery (injSlot i p) (injQuery i q)
+  -> QueryF s'' s' f'' f' g p' (M.Map p' i)
+mkQueries' i q = mkQueries (injQuery i q)
 
 -- | Lifts a value in the `QueryF` algebra into the monad used by a component's
 -- | `eval` function.
